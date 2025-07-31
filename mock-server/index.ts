@@ -18,7 +18,7 @@ export const AddToCartPayloadSchemaGTM = z.object({
   event_type: z.literal('add_to_cart'),
   page_url: z.string(),
   product_id: z.string(),
-  quantity: z.number().int().positive(),
+  quantity_added: z.number().int().positive(),
 });
 export const CheckoutSuccessPayloadSchemaGTM = z.object({
   event_type: z.literal('checkout_success'),
@@ -35,14 +35,13 @@ export const AddToCartPayloadSchemaMeta = z.object({
   event_type: z.literal('add_to_cart'),
   page_url: z.string(),
   id: z.string(),
-  qty: z.number().int().positive(),
+  qty_added: z.number().int().positive(),
 });
 export const CheckoutSuccessPayloadSchemaMeta = z.object({
   event_type: z.literal('checkout_success'),
   page_url: z.string(),
   order_ref: z.string(),
   value: z.number().nonnegative(),
-  email: z.string().email().optional(),
 });
 
 export const PageViewPayloadSchemaOmetria = z.object({
@@ -53,7 +52,7 @@ export const AddToCartPayloadSchemaOmetria = z.object({
   event_type: z.literal('add_to_cart'),
   page_url: z.string(),
   item_id: z.string(),
-  count: z.number().int().positive(),
+  count_added: z.number().int().positive(),
 });
 export const CheckoutSuccessPayloadSchemaOmetria = z.object({
   event_type: z.literal('checkout_success'),
@@ -76,7 +75,7 @@ export const AddToCartPayloadSchemaSecure = z.object({
   event_type: z.literal('add_to_cart'),
   page_url: z.string(),
   product_id: z.string(),
-  quantity: z.number().int().positive(),
+  quantity_added: z.number().int().positive(),
   user_id: z.string().optional(),
 });
 export const CheckoutSuccessPayloadSchemaSecure = z.object({
@@ -138,14 +137,14 @@ registry.registerPath({
                 event_type: 'add_to_cart',
                 page_url: 'https://example.com',
                 product_id: '123',
-                quantity: 2,
+                quantity_added: 2,
               },
             },
             CheckoutSuccess: {
               value: {
                 event_type: 'checkout_success',
                 page_url: 'https://example.com',
-                order_id: 'order-abc',
+                order_id: 'qsd1w132s',
                 total: 99.99,
               },
             },
@@ -189,16 +188,15 @@ registry.registerPath({
                 event_type: 'add_to_cart',
                 page_url: 'https://example.com',
                 id: '456',
-                qty: 3,
+                qty_added: 3,
               },
             },
             CheckoutSuccess: {
               value: {
                 event_type: 'checkout_success',
                 page_url: 'https://example.com',
-                order_ref: 'order-xyz',
+                order_ref: '12312sssd',
                 value: 150.5,
-                email: 'user@example.com',
               },
             },
           },
@@ -241,7 +239,7 @@ registry.registerPath({
                 event_type: 'add_to_cart',
                 page_url: 'https://example.com',
                 item_id: '789',
-                count: 1,
+                count_added: 1,
               },
             },
             CheckoutSuccess: {
@@ -298,7 +296,7 @@ registry.registerPath({
                 event_type: 'add_to_cart',
                 page_url: 'https://example.com',
                 product_id: '321',
-                quantity: 4,
+                quantity_added: 4,
                 user_id: 'user-123',
               },
             },
@@ -306,9 +304,9 @@ registry.registerPath({
               value: {
                 event_type: 'checkout_success',
                 page_url: 'https://example.com',
-                order_id: 'order-secure',
+                order_id: '12312d1w',
                 total: 300,
-                email: 'secureuser@example.com',
+                email: 'b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514',
                 address: {
                   line1: '456 Elm St',
                   line2: 'Apt 7',

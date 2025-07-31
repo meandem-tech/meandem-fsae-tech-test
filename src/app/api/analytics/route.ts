@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Key used to access the /collect/secure endpoint
+// Key to access the /collect/secure endpoint, used in a header named 'Authorization' with the value 'supersecretkey'
 const ANALYTICS_API_KEY = 'supersecretkey';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

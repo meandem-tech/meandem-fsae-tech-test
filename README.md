@@ -143,6 +143,5 @@ The banner provides two options:
 ## 🛠 Project Structure
 
 - `pages/` – Next.js pages (product list, detail, cart, checkout)
-- `pages/api/track.js` – Stubbed API route for backend tracking
 - `mock-server/` – Preconfigured mock server (run separately, do not edit)
 - `events.types.ts` – **All TypeScript types for analytics event payloads and event storage are defined here.** Refer to this file for the structure of page views, add to cart, and checkout success events.
