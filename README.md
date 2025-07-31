@@ -75,6 +75,10 @@ Loading any page should send the `page_load` with the appropriate consent to eac
 
 ## 🏁 Getting Started
 
+> **Suggested Node.js Version:**
+>
+> The recommended Node.js version for this project can be found in the [.nvmrc](./.nvmrc) file. If you use [nvm](https://github.com/nvm-sh/nvm), you can run `nvm use` in the project directory to automatically switch to the correct version.
+
 1. **Install dependencies**
 
    ```bash
