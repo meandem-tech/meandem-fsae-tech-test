@@ -6,10 +6,16 @@ Welcome! This technical test is designed to evaluate your ability to implement f
 
 ## 📜 Submission Guide
 
-1. Fork this repository.
+1. **Do not fork this repository.**  
+   Instead, click the link below to create your own copy using this template:
+
+   👉 [Use this template](https://github.com/meandem-tech/meandem-fsae-tech-test/generate)
+
 2. Read the README in its entirety
-3. Complete the test in your fork
-4. Send us the URL of your completed test
+
+3. Complete the test in your newly created repo
+
+4. **Send a the link** to your completed repository once you're done.
 
 ### 🤔 Things to keep in mind
 
@@ -139,10 +145,3 @@ The banner provides two options:
 
 - **Accept**: Sets a cookie (`analytics_consent=true`) and allows analytics events to be sent.
 - **Decline**: Sets a cookie (`analytics_consent=false`) and prevents analytics events from being sent.
-
----
-
-## 🛠 Project Structure
-
-- `pages/` – Next.js pages (product list, detail, cart, checkout)
-- `mock-server/` – Preconfigured mock server (run separately, do not edit)
