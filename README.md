@@ -6,7 +6,7 @@ Welcome! This technical test is designed to evaluate your ability to implement f
 
 ## 📜 Submission Guide
 
-1. **Do not fork this repository.**  
+1. **Do not fork this repository.**
    Instead, click the link below to create your own copy using this template:
 
    👉 [Use this template](https://github.com/meandem-tech/meandem-fsae-tech-test/generate)
@@ -53,6 +53,8 @@ Complete each of the tasks below, with the following general requirements in min
 
 Aim to spend 2-3 hours on this assessment. Try to get as far as you can in the time as possible, don't worry if you don't have time to complete all the tasks, we're more interested in your approach.
 
+The core e-commerce functionality (cart, checkout, product pages, etc.) is already implemented for you. You do not need to build the shopping experience from scratch. Focus on adding analytics requests and instrumentation as described below
+
 Feel free to leave a markdown file of improvements you would have made had you had more time / what your approach to unattempted tasks would have been.
 
 ### Task 1
@@ -85,17 +87,29 @@ Loading any page should send the `page_load` with the appropriate consent to eac
    pnpm install
    ```
 
-2. **Run the analytics mock-server** (in a separate terminal)
+2. **Run the analytics mock-server**
 
    ```bash
    pnpm run mock-server
    ```
 
-3. **Start the e-commerce app**
+3. **Start the e-commerce app** (in a separate terminal)
 
    ```bash
    pnpm run dev
    ```
+
+## 🛒 E-commerce Application
+
+The e-commerce application is built with Next.js and runs on port **3000** by default.
+
+Once started, you can access it at:
+
+```text
+http://localhost:3000
+```
+
+---
 
 ## 📡  Analytics Mock Server
 
