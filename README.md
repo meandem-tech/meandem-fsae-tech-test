@@ -123,7 +123,13 @@ Use this report to verify your tracking implementation and consent logic. Refres
 |-------------------------|---------------------------------------|
 | `GET http://localhost:4000/report`   | Shows a live HTML report of all analytics events received, split by endpoint, event type, and consent status |
 
-❗ **The scope of this test does not involve changing any of the code in the [mock-server](./mock-server/) directory. Please avoid changing the code in this folder**
+### Documentation Endpoint
+
+| Endpoint                | Description                           |
+|-------------------------|---------------------------------------|
+| `GET http://localhost:4000/docs`   | Interactive OpenAPI documentation for all analytics endpoints |
+
+The `/docs` endpoint provides a Swagger UI interface for exploring all analytics endpoints exposed by the mock server. You can view request/response formats here.
 
 ---
 
@@ -144,4 +150,3 @@ The banner provides two options:
 
 - `pages/` – Next.js pages (product list, detail, cart, checkout)
 - `mock-server/` – Preconfigured mock server (run separately, do not edit)
-- `events.types.ts` – **All TypeScript types for analytics event payloads and event storage are defined here.** Refer to this file for the structure of page views, add to cart, and checkout success events.

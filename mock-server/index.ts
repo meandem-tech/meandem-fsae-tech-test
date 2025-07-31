@@ -4,8 +4,6 @@ import path from 'path';
 import { z } from 'zod';
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { Events } from '../events.types';
-import { Event } from '../events.types';
 import swaggerUi from 'swagger-ui-express';
 
 extendZodWithOpenApi(z);
@@ -273,18 +271,15 @@ registry.registerPath({
 
 registry.registerComponent('securitySchemes', 'ApiKey', {
   type: 'apiKey',
-  scheme: 'apiKey',
   in: 'header',
-  name:'Authorization',
+  name: 'Authorization',
 })
 
 registry.registerPath({
   method: 'post',
   path: '/collect/secure',
   operationId: 'collectSecure',
-  security: [{
-    ApiKey: []
-  }],
+  security: [{ ApiKey: [] }],
   request: {
     body: {
       content: {
@@ -365,6 +360,18 @@ const eventsDir = path.dirname(eventsFilePath);
 if (!fs.existsSync(eventsDir)) {
   fs.mkdirSync(eventsDir, { recursive: true });
 }
+type GTMEvent = z.infer<typeof PageViewPayloadSchemaGTM> | z.infer<typeof AddToCartPayloadSchemaGTM> | z.infer<typeof CheckoutSuccessPayloadSchemaGTM>;
+type MetaEvent = z.infer<typeof PageViewPayloadSchemaMeta> | z.infer<typeof AddToCartPayloadSchemaMeta> | z.infer<typeof CheckoutSuccessPayloadSchemaMeta>;
+type OmetriaEvent = z.infer<typeof PageViewPayloadSchemaOmetria> | z.infer<typeof AddToCartPayloadSchemaOmetria> | z.infer<typeof CheckoutSuccessPayloadSchemaOmetria>;
+type SecureEvent = z.infer<typeof PageViewPayloadSchemaSecure> | z.infer<typeof AddToCartPayloadSchemaSecure> | z.infer<typeof CheckoutSuccessPayloadSchemaSecure>;
+
+type Events = {
+  '/collect/gtm'?: Array<{ timestamp: number; payload: GTMEvent }>;
+  '/collect/meta'?: Array<{ timestamp: number; payload: MetaEvent }>;
+  '/collect/ometria'?: Array<{ timestamp: number; payload: OmetriaEvent }>;
+  '/collect/secure'?: Array<{ timestamp: number; payload: SecureEvent }>;
+};
+
 let events: Events = {};
 if (fs.existsSync(eventsFilePath)) {
   try {
@@ -518,8 +525,11 @@ app.get('/report', (req: Request, res: Response) => {
     html += `<table><thead><tr><th>Event Type</th><th>Count</th></tr></thead><tbody>`;
     eventTypes.forEach(type => {
       let count = 0;
-      if (Array.isArray(fileEvents[endpoint])) {
-        fileEvents[endpoint].forEach((e: Event) => {
+      // Only use endpoint if it's a key of Events
+      type EndpointKey = keyof Events;
+      if (["/collect/gtm", "/collect/meta", "/collect/ometria", "/collect/secure"].includes(endpoint)) {
+        const arr = fileEvents[endpoint as EndpointKey];
+        arr?.forEach((e) => {
           if (e.payload && e.payload.event_type === type) {
             count++;
           }
