@@ -57,7 +57,7 @@ Feel free to leave a markdown file of improvements you would have made had you h
 
 ### Task 1
 
-Given the user adds an item to bag, a successful analytics request should be sent to the `/collect/gtm` endpoint on the analytics mock server.
+Given the user adds an item to cart, a successful `add_to_cart` analytics request should be sent to the `/collect/gtm` endpoint on the analytics mock server.
 
 ### Task 2
 
@@ -65,7 +65,7 @@ Given the user successfully checks out, a successful `checkout_success` analytic
 
 ### Task 3
 
-Given the user adds an item to the bag, an event should be sent to all four analytics endpoints, including the `/collect/secure` endpoint
+Given the user adds an item to the cart, a successful `add_to_cart` analytics request should be sent to all four analytics endpoints, including the `/collect/secure` endpoint
 
 ### Task 4
 
