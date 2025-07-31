@@ -74,7 +74,6 @@ export const AddToCartPayloadSchemaSecure = z.object({
   page_url: z.string(),
   product_id: z.string(),
   quantity_added: z.number().int().positive(),
-  user_id: z.string().optional(),
 });
 export const CheckoutSuccessPayloadSchemaSecure = z.object({
   event_type: z.literal('checkout_success'),
@@ -89,7 +88,6 @@ export const CheckoutSuccessPayloadSchemaSecure = z.object({
     postcode: z.string(),
     country: z.string(),
   }),
-  user_id: z.string().optional(),
 });
 
 const registry = new OpenAPIRegistry();
@@ -302,7 +300,6 @@ registry.registerPath({
                 page_url: 'https://example.com',
                 product_id: '321',
                 quantity_added: 4,
-                user_id: 'user-123',
               },
             },
             CheckoutSuccess: {
@@ -319,7 +316,6 @@ registry.registerPath({
                   postcode: '67890',
                   country: 'USA',
                 },
-                user_id: 'user-123',
               },
             },
           },
@@ -355,6 +351,9 @@ const endpoints: string[] = [
 
 
 const eventsFilePath = path.resolve('./mock-server/events/events.json');
+if (fs.existsSync(eventsFilePath)) {
+  fs.unlinkSync(eventsFilePath);
+}
 
 const eventsDir = path.dirname(eventsFilePath);
 if (!fs.existsSync(eventsDir)) {

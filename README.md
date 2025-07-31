@@ -55,17 +55,13 @@ Given the user adds an item to bag, a successful analytics request should be sen
 
 ### Task 2
 
-Given the user removes an item to bag, a successful analytics request should be sent to the `/collect/algolia` endpoint on the analytics mock server.
+Given the user successfully checks out, a successful `checkout_success` analytics request should be sent via the NextJS API route `/api/analytics` to the backend `/collect/secure` endpoint on the analytics mock server.
 
 ### Task 3
 
-Given the user successfully checks out, a successful analytics request should be sent via the NextJS API route `/api/analytics` to the backend `/collect/secure` endpoint on the analytics mock server.
-
-### Task 4
-
 Given the user adds an item to the bag, an event should be sent to all four analytics endpoints, including the `/collect/secure` endpoint
 
-### Task 5
+### Task 4
 
 Loading any page should send the `page_load` with the appropriate consent to each of the four analytics endpoints. This should be true even when landing on the site for the first time.
 
