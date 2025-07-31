@@ -93,13 +93,17 @@ Loading any page should send the `page_load` with the appropriate consent to eac
 
 ## 📡  Analytics Mock Server
 
-The mock server runs on a **separate port** (default: `http://localhost:4000`) and exposes the following dummy endpoints:
+### Analytics Endpoints Accessible From the Frontend
+
+The mock server runs on a **separate port** (default: `http://localhost:4000`) and exposes the following endpoints:
 
 | Endpoint              | Description                          |
 |-----------------------|--------------------------------------|
 | `POST http://localhost:4000/collect/ga`     | Simulates Google Analytics client-side |
-| `POST http://localhost:4000/collect/algolia`   | Simulates tracking for Algolia insights API  |
+| `POST http://localhost:4000/collect/algolia`| Simulates tracking for Algolia insights API  |
 | `POST http://localhost:4000/collect/ometria`| Simulates Ometria tracking            |
+
+### Analytics Endpoints Accessible From the Backend
 
 One endpoint is only accessible from the **backend only**, simulating server-side tagging:
 
@@ -111,11 +115,13 @@ This endpoint must be called with the following header
 
 `Authorization: supersecretkey`
 
+### Reporting Endpoint
+
+Use this report to verify your tracking implementation and consent logic. Refresh the page to see live updates as events are sent.
+
 | Endpoint                | Description                           |
 |-------------------------|---------------------------------------|
 | `GET http://localhost:4000/report`   | Shows a live HTML report of all analytics events received, split by endpoint, event type, and consent status |
-
-Use this report to verify your tracking implementation and consent logic. Refresh the page to see live updates as events are sent.
 
 ❗ **The scope of this test does not involve changing any of the code in the [mock-server](./mock-server/) directory. Please avoid changing the code in this folder**
 

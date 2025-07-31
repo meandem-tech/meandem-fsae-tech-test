@@ -17,38 +17,93 @@ const endpoints: string[] = [
   '/collect/secure'
 ];
 
-// Zod schemas for each event type
-const BaseEventPayloadSchema = z.object({
+
+// Separate Zod schemas for each endpoint and event type
+export const PageViewPayloadSchemaGTM = z.object({
+  event_type: z.literal('page_view'),
   page_url: z.string(),
 });
-
-export const PageViewPayloadSchema = BaseEventPayloadSchema.extend({
-  event_type: z.literal('page_view'),
-});export const AddToCartPayloadSchema = BaseEventPayloadSchema.extend({
+export const AddToCartPayloadSchemaGTM = z.object({
   event_type: z.literal('add_to_cart'),
+  page_url: z.string(),
   product_id: z.string(),
   quantity: z.number().int().positive(),
 });
-
-export const CheckoutSuccessPayloadSchema = BaseEventPayloadSchema.extend({
+export const CheckoutSuccessPayloadSchemaGTM = z.object({
   event_type: z.literal('checkout_success'),
+  page_url: z.string(),
   order_id: z.string(),
   total: z.number().nonnegative(),
-  email: z.email(),
+});
+
+export const PageViewPayloadSchemaMeta = z.object({
+  event_type: z.literal('page_view'),
+  page_url: z.string(),
+});
+export const AddToCartPayloadSchemaMeta = z.object({
+  event_type: z.literal('add_to_cart'),
+  page_url: z.string(),
+  id: z.string(),
+  qty: z.number().int().positive(),
+});
+export const CheckoutSuccessPayloadSchemaMeta = z.object({
+  event_type: z.literal('checkout_success'),
+  page_url: z.string(),
+  order_ref: z.string(),
+  value: z.number().nonnegative(),
+  email: z.string().email().optional(),
+});
+
+export const PageViewPayloadSchemaOmetria = z.object({
+  event_type: z.literal('page_view'),
+  page_url: z.string(),
+});
+export const AddToCartPayloadSchemaOmetria = z.object({
+  event_type: z.literal('add_to_cart'),
+  page_url: z.string(),
+  item_id: z.string(),
+  count: z.number().int().positive(),
+});
+export const CheckoutSuccessPayloadSchemaOmetria = z.object({
+  event_type: z.literal('checkout_success'),
+  page_url: z.string(),
+  order_id: z.string(),
+  total: z.number().nonnegative(),
+  address: z.object({
+    line1: z.string(),
+    city: z.string(),
+    postcode: z.string(),
+    country: z.string(),
+  }),
+});
+
+export const PageViewPayloadSchemaSecure = z.object({
+  event_type: z.literal('page_view'),
+  page_url: z.string(),
+});
+export const AddToCartPayloadSchemaSecure = z.object({
+  event_type: z.literal('add_to_cart'),
+  page_url: z.string(),
+  product_id: z.string(),
+  quantity: z.number().int().positive(),
+  user_id: z.string().optional(),
+});
+export const CheckoutSuccessPayloadSchemaSecure = z.object({
+  event_type: z.literal('checkout_success'),
+  page_url: z.string(),
+  order_id: z.string(),
+  total: z.number().nonnegative(),
+  email: z.string().email(),
   address: z.object({
     line1: z.string(),
     line2: z.string().optional(),
     city: z.string(),
     postcode: z.string(),
-    country: z.string()
-  })
+    country: z.string(),
+  }),
+  user_id: z.string().optional(),
 });
 
-export const AnalyticsEventPayloadSchema = z.union([
-  PageViewPayloadSchema,
-  AddToCartPayloadSchema,
-  CheckoutSuccessPayloadSchema,
-]);
 
 const eventsFilePath = path.resolve('./mock-server/events/events.json');
 
@@ -67,29 +122,106 @@ if (fs.existsSync(eventsFilePath)) {
   fs.writeFileSync(eventsFilePath, JSON.stringify({}, null, 2));
 }
 
-endpoints.forEach(endpoint => {
-  app.post(endpoint, (req: Request, res: Response) => {
-    if (endpoint === '/collect/secure') {
-      const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-      if (authHeader !== 'supersecretkey') {
-        res.status(401).json({ error: 'Unauthorized: missing or invalid Authorization header' });
-        return;
-      }
-    }
-    console.log(`Received POST ${endpoint}:`, req.body);
-    // Validate payload shape
-    const result = AnalyticsEventPayloadSchema.safeParse(req.body);
-    if (!result.success) {
-      res.status(400).json({ error: 'Invalid payload', details: result.error.issues });
-      return;
-    }
-    // Store event in events object
-    if (!events[endpoint]) events[endpoint] = [];
-    events[endpoint].push({ timestamp: Date.now(), payload: result.data });
-    // Write to file
-    fs.writeFileSync(eventsFilePath, JSON.stringify(events, null, 2));
-    res.status(200).json({ status: 'ok' });
-  });
+// Define each endpoint handler separately
+app.post('/collect/gtm', (req: Request, res: Response) => {
+  console.log('Received POST /collect/gtm:', req.body);
+  const eventType = req.body.event_type;
+  const schemas = {
+    page_view: PageViewPayloadSchemaGTM,
+    add_to_cart: AddToCartPayloadSchemaGTM,
+    checkout_success: CheckoutSuccessPayloadSchemaGTM,
+  };
+  const schema = schemas[eventType as keyof typeof schemas];
+  if (!schema) {
+    res.status(400).json({ error: 'Unknown event type for this endpoint' });
+    return;
+  }
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: 'Invalid payload', details: result.error.issues });
+    return;
+  }
+  if (!events['/collect/gtm']) events['/collect/gtm'] = [];
+  events['/collect/gtm'].push({ timestamp: Date.now(), payload: result.data });
+  fs.writeFileSync(eventsFilePath, JSON.stringify(events, null, 2));
+  res.status(200).json({ status: 'ok' });
+});
+
+app.post('/collect/meta', (req: Request, res: Response) => {
+  console.log('Received POST /collect/meta:', req.body);
+  const eventType = req.body.event_type;
+  const schemas = {
+    page_view: PageViewPayloadSchemaMeta,
+    add_to_cart: AddToCartPayloadSchemaMeta,
+    checkout_success: CheckoutSuccessPayloadSchemaMeta,
+  };
+  const schema = schemas[eventType as keyof typeof schemas];
+  if (!schema) {
+    res.status(400).json({ error: 'Unknown event type for this endpoint' });
+    return;
+  }
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: 'Invalid payload', details: result.error.issues });
+    return;
+  }
+  if (!events['/collect/meta']) events['/collect/meta'] = [];
+  events['/collect/meta'].push({ timestamp: Date.now(), payload: result.data });
+  fs.writeFileSync(eventsFilePath, JSON.stringify(events, null, 2));
+  res.status(200).json({ status: 'ok' });
+});
+
+app.post('/collect/ometria', (req: Request, res: Response) => {
+  console.log('Received POST /collect/ometria:', req.body);
+  const eventType = req.body.event_type;
+  const schemas = {
+    page_view: PageViewPayloadSchemaOmetria,
+    add_to_cart: AddToCartPayloadSchemaOmetria,
+    checkout_success: CheckoutSuccessPayloadSchemaOmetria,
+  };
+  const schema = schemas[eventType as keyof typeof schemas];
+  if (!schema) {
+    res.status(400).json({ error: 'Unknown event type for this endpoint' });
+    return;
+  }
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: 'Invalid payload', details: result.error.issues });
+    return;
+  }
+  if (!events['/collect/ometria']) events['/collect/ometria'] = [];
+  events['/collect/ometria'].push({ timestamp: Date.now(), payload: result.data });
+  fs.writeFileSync(eventsFilePath, JSON.stringify(events, null, 2));
+  res.status(200).json({ status: 'ok' });
+});
+
+app.post('/collect/secure', (req: Request, res: Response) => {
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+  if (authHeader !== 'supersecretkey') {
+    res.status(401).json({ error: 'Unauthorized: missing or invalid Authorization header' });
+    return;
+  }
+  console.log('Received POST /collect/secure:', req.body);
+  const eventType = req.body.event_type;
+  const schemas = {
+    page_view: PageViewPayloadSchemaSecure,
+    add_to_cart: AddToCartPayloadSchemaSecure,
+    checkout_success: CheckoutSuccessPayloadSchemaSecure,
+  };
+  const schema = schemas[eventType as keyof typeof schemas];
+  if (!schema) {
+    res.status(400).json({ error: 'Unknown event type for this endpoint' });
+    return;
+  }
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: 'Invalid payload', details: result.error.issues });
+    return;
+  }
+  if (!events['/collect/secure']) events['/collect/secure'] = [];
+  events['/collect/secure'].push({ timestamp: Date.now(), payload: result.data });
+  fs.writeFileSync(eventsFilePath, JSON.stringify(events, null, 2));
+  res.status(200).json({ status: 'ok' });
 });
 
 app.listen(PORT, () => {
