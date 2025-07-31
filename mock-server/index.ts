@@ -2,23 +2,14 @@ import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
+import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { Events } from '../events.types';
 import { Event } from '../events.types';
+import swaggerUi from 'swagger-ui-express';
 
-const app = express();
-const PORT = 4000;
+extendZodWithOpenApi(z);
 
-app.use(express.json());
-
-const endpoints: string[] = [
-  '/collect/gtm',
-  '/collect/meta',
-  '/collect/ometria',
-  '/collect/secure'
-];
-
-
-// Separate Zod schemas for each endpoint and event type
 export const PageViewPayloadSchemaGTM = z.object({
   event_type: z.literal('page_view'),
   page_url: z.string(),
@@ -103,6 +94,261 @@ export const CheckoutSuccessPayloadSchemaSecure = z.object({
   }),
   user_id: z.string().optional(),
 });
+
+const registry = new OpenAPIRegistry();
+
+registry.register('PageViewPayloadSchemaGTM', PageViewPayloadSchemaGTM);
+registry.register('AddToCartPayloadSchemaGTM', AddToCartPayloadSchemaGTM);
+registry.register('CheckoutSuccessPayloadSchemaGTM', CheckoutSuccessPayloadSchemaGTM);
+
+registry.register('PageViewPayloadSchemaMeta', PageViewPayloadSchemaMeta);
+registry.register('AddToCartPayloadSchemaMeta', AddToCartPayloadSchemaMeta);
+registry.register('CheckoutSuccessPayloadSchemaMeta', CheckoutSuccessPayloadSchemaMeta);
+
+registry.register('PageViewPayloadSchemaOmetria', PageViewPayloadSchemaOmetria);
+registry.register('AddToCartPayloadSchemaOmetria', AddToCartPayloadSchemaOmetria);
+registry.register('CheckoutSuccessPayloadSchemaOmetria', CheckoutSuccessPayloadSchemaOmetria);
+
+registry.register('PageViewPayloadSchemaSecure', PageViewPayloadSchemaSecure);
+registry.register('AddToCartPayloadSchemaSecure', AddToCartPayloadSchemaSecure);
+registry.register('CheckoutSuccessPayloadSchemaSecure', CheckoutSuccessPayloadSchemaSecure);
+
+registry.registerPath({
+  method: 'post',
+  path: '/collect/gtm',
+  operationId: 'collectGTM',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.discriminatedUnion('event_type', [
+            PageViewPayloadSchemaGTM,
+            AddToCartPayloadSchemaGTM,
+            CheckoutSuccessPayloadSchemaGTM,
+          ]),
+          examples: {
+            PageView: {
+              value: {
+                event_type: 'page_view',
+                page_url: 'https://example.com',
+              },
+            },
+            AddToCart: {
+              value: {
+                event_type: 'add_to_cart',
+                page_url: 'https://example.com',
+                product_id: '123',
+                quantity: 2,
+              },
+            },
+            CheckoutSuccess: {
+              value: {
+                event_type: 'checkout_success',
+                page_url: 'https://example.com',
+                order_id: 'order-abc',
+                total: 99.99,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Event successfully recorded',
+    },
+    400: {
+      description: 'Invalid payload',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/collect/meta',
+  operationId: 'collectMeta',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.discriminatedUnion('event_type', [
+            PageViewPayloadSchemaMeta,
+            AddToCartPayloadSchemaMeta,
+            CheckoutSuccessPayloadSchemaMeta,
+          ]),
+          examples: {
+            PageView: {
+              value: {
+                event_type: 'page_view',
+                page_url: 'https://example.com',
+              },
+            },
+            AddToCart: {
+              value: {
+                event_type: 'add_to_cart',
+                page_url: 'https://example.com',
+                id: '456',
+                qty: 3,
+              },
+            },
+            CheckoutSuccess: {
+              value: {
+                event_type: 'checkout_success',
+                page_url: 'https://example.com',
+                order_ref: 'order-xyz',
+                value: 150.5,
+                email: 'user@example.com',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Event successfully recorded',
+    },
+    400: {
+      description: 'Invalid payload',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/collect/ometria',
+  operationId: 'collectOmetria',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.discriminatedUnion('event_type', [
+            PageViewPayloadSchemaOmetria,
+            AddToCartPayloadSchemaOmetria,
+            CheckoutSuccessPayloadSchemaOmetria,
+          ]),
+          examples: {
+            PageView: {
+              value: {
+                event_type: 'page_view',
+                page_url: 'https://example.com',
+              },
+            },
+            AddToCart: {
+              value: {
+                event_type: 'add_to_cart',
+                page_url: 'https://example.com',
+                item_id: '789',
+                count: 1,
+              },
+            },
+            CheckoutSuccess: {
+              value: {
+                event_type: 'checkout_success',
+                page_url: 'https://example.com',
+                order_id: 'order-omet',
+                total: 200,
+                address: {
+                  line1: '123 Main St',
+                  city: 'Anytown',
+                  postcode: '12345',
+                  country: 'USA',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Event successfully recorded',
+    },
+    400: {
+      description: 'Invalid payload',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/collect/secure',
+  operationId: 'collectSecure',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.discriminatedUnion('event_type', [
+            PageViewPayloadSchemaSecure,
+            AddToCartPayloadSchemaSecure,
+            CheckoutSuccessPayloadSchemaSecure,
+          ]),
+          examples: {
+            PageView: {
+              value: {
+                event_type: 'page_view',
+                page_url: 'https://example.com',
+              },
+            },
+            AddToCart: {
+              value: {
+                event_type: 'add_to_cart',
+                page_url: 'https://example.com',
+                product_id: '321',
+                quantity: 4,
+                user_id: 'user-123',
+              },
+            },
+            CheckoutSuccess: {
+              value: {
+                event_type: 'checkout_success',
+                page_url: 'https://example.com',
+                order_id: 'order-secure',
+                total: 300,
+                email: 'secureuser@example.com',
+                address: {
+                  line1: '456 Elm St',
+                  line2: 'Apt 7',
+                  city: 'Securetown',
+                  postcode: '67890',
+                  country: 'USA',
+                },
+                user_id: 'user-123',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Event successfully recorded',
+    },
+    400: {
+      description: 'Invalid payload',
+    },
+    401: {
+      description: 'Unauthorized',
+    },
+  },
+  security: [{ Authorization: [] }],
+});
+
+const app = express();
+const PORT = 4000;
+
+app.use(express.json());
+
+const endpoints: string[] = [
+  '/collect/gtm',
+  '/collect/meta',
+  '/collect/ometria',
+  '/collect/secure'
+];
 
 
 const eventsFilePath = path.resolve('./mock-server/events/events.json');
@@ -224,11 +470,18 @@ app.post('/collect/secure', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Mock analytics server running on http://localhost:${PORT}`);
-  console.log('Endpoints:');
-  endpoints.forEach(e => console.log(`  POST ${e}`));
+const generator = new OpenApiGeneratorV3(registry.definitions);
+const document = generator.generateDocument({
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'Analytics Mockserver',
+  },
+  servers: [{ url: 'v1' }],
 });
+
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(document));
 
 // Serve HTML report of event counts per endpoint
 app.get('/report', (req: Request, res: Response) => {
@@ -271,4 +524,10 @@ app.get('/report', (req: Request, res: Response) => {
   html += `</body></html>`;
   res.setHeader('Content-Type', 'text/html');
   res.send(html);
+});
+
+app.listen(PORT, () => {
+  console.log(`Mock analytics server running on http://localhost:${PORT}`);
+  console.log('Endpoints:');
+  endpoints.forEach(e => console.log(`  POST ${e}`));
 });
