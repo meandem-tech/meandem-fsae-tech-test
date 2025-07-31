@@ -271,10 +271,20 @@ registry.registerPath({
   },
 });
 
+registry.registerComponent('securitySchemes', 'ApiKey', {
+  type: 'apiKey',
+  scheme: 'apiKey',
+  in: 'header',
+  name:'Authorization',
+})
+
 registry.registerPath({
   method: 'post',
   path: '/collect/secure',
   operationId: 'collectSecure',
+  security: [{
+    ApiKey: []
+  }],
   request: {
     body: {
       content: {
@@ -330,10 +340,10 @@ registry.registerPath({
       description: 'Invalid payload',
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Unauthorized. This endpoint requires an Authorization header with value "supersecretkey".',
     },
   },
-  security: [{ Authorization: [] }],
+  description: 'Requires Authorization header: supersecretkey',
 });
 
 const app = express();
@@ -475,7 +485,7 @@ const document = generator.generateDocument({
     version: '1.0.0',
     title: 'Analytics Mockserver',
   },
-  servers: [{ url: 'v1' }],
+  servers: [],
 });
 
 
