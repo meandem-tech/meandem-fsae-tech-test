@@ -1,18 +1,18 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Key to access the /collect/secure endpoint, used in a header named 'Authorization' with the value 'supersecretkey'
 const ANALYTICS_API_KEY = 'supersecretkey';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
   }
 
   try {
     // Logic to forward the analytics event goes here
-    res.status(200).json({});
+    return NextResponse.json({});
   } catch (err) {
-    res.status(500).json({
+    return NextResponse.json({
       error: 'Failed to forward analytics event',
       details: err instanceof Error ? err.message : String(err),
     });
