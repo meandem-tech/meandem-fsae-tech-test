@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
@@ -80,7 +81,7 @@ export const CheckoutSuccessPayloadSchemaSecure = z.object({
   page_url: z.string(),
   order_id: z.string(),
   total: z.number().nonnegative(),
-  email: z.string().email(),
+  email: z.string(),
   address: z.object({
     line1: z.string(),
     line2: z.string().optional(),
@@ -338,6 +339,7 @@ registry.registerPath({
 });
 
 const app = express();
+app.use(cors());
 const PORT = 4000;
 
 app.use(express.json());
