@@ -71,7 +71,7 @@ Given the user adds an item to the cart, a successful `add_to_cart` analytics re
 
 ### Task 4
 
-Loading any page should send the `page_load` with the appropriate consent to each of the four analytics endpoints. This should be true even when landing on the site for the first time.
+Loading any page should send the `page_view` with the appropriate consent to each of the four analytics endpoints. This should be true even when landing on the site for the first time.
 
 ---
 
