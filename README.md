@@ -35,7 +35,7 @@ There are three main events we are interested in tracking:
 - Add to cart actions
 - Checkout success
 
-You’ll simulate integrations with tools like **Google Analytics**, **Meta Pixel**, and **Ometria**, using a set of **dummy API endpoints**, which are hosted on a [mock server](#--analytics-mock-server).
+You’ll simulate integrations with tools like **Google Analytics**, **Algolia**, and **Ometria**, using a set of **dummy API endpoints**, which are hosted on a [mock server](#--analytics-mock-server).
 
 A [cookie banner](#-cookie-banner) exists on the site, using which the user can accept or decline cookies.
 
@@ -119,7 +119,7 @@ The mock server runs on a **separate port** (default: `http://localhost:4000`) a
 
 | Endpoint              | Description                          |
 |-----------------------|--------------------------------------|
-| `POST http://localhost:4000/collect/ga`     | Simulates Google Analytics client-side |
+| `POST http://localhost:4000/collect/gtm`     | Simulates Google Analytics client-side |
 | `POST http://localhost:4000/collect/algolia`| Simulates tracking for Algolia insights API  |
 | `POST http://localhost:4000/collect/ometria`| Simulates Ometria tracking            |
 

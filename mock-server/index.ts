@@ -26,17 +26,17 @@ export const CheckoutSuccessPayloadSchemaGTM = z.object({
   total: z.number().nonnegative(),
 });
 
-export const PageViewPayloadSchemaMeta = z.object({
+export const PageViewPayloadSchemaAlgolia = z.object({
   event_type: z.literal('page_view'),
   page_url: z.string(),
 });
-export const AddToCartPayloadSchemaMeta = z.object({
+export const AddToCartPayloadSchemaAlgolia = z.object({
   event_type: z.literal('add_to_cart'),
   page_url: z.string(),
   id: z.string(),
   qty_added: z.number().int().positive(),
 });
-export const CheckoutSuccessPayloadSchemaMeta = z.object({
+export const CheckoutSuccessPayloadSchemaAlgolia = z.object({
   event_type: z.literal('checkout_success'),
   page_url: z.string(),
   order_ref: z.string(),
@@ -97,9 +97,9 @@ registry.register('PageViewPayloadSchemaGTM', PageViewPayloadSchemaGTM);
 registry.register('AddToCartPayloadSchemaGTM', AddToCartPayloadSchemaGTM);
 registry.register('CheckoutSuccessPayloadSchemaGTM', CheckoutSuccessPayloadSchemaGTM);
 
-registry.register('PageViewPayloadSchemaMeta', PageViewPayloadSchemaMeta);
-registry.register('AddToCartPayloadSchemaMeta', AddToCartPayloadSchemaMeta);
-registry.register('CheckoutSuccessPayloadSchemaMeta', CheckoutSuccessPayloadSchemaMeta);
+registry.register('PageViewPayloadSchemaAlgolia', PageViewPayloadSchemaAlgolia);
+registry.register('AddToCartPayloadSchemaAlgolia', AddToCartPayloadSchemaAlgolia);
+registry.register('CheckoutSuccessPayloadSchemaAlgolia', CheckoutSuccessPayloadSchemaAlgolia);
 
 registry.register('PageViewPayloadSchemaOmetria', PageViewPayloadSchemaOmetria);
 registry.register('AddToCartPayloadSchemaOmetria', AddToCartPayloadSchemaOmetria);
@@ -162,16 +162,16 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
-  path: '/collect/meta',
-  operationId: 'collectMeta',
+  path: '/collect/algolia',
+  operationId: 'collectAlgolia',
   request: {
     body: {
       content: {
         'application/json': {
           schema: z.discriminatedUnion('event_type', [
-            PageViewPayloadSchemaMeta,
-            AddToCartPayloadSchemaMeta,
-            CheckoutSuccessPayloadSchemaMeta,
+            PageViewPayloadSchemaAlgolia,
+            AddToCartPayloadSchemaAlgolia,
+            CheckoutSuccessPayloadSchemaAlgolia,
           ]),
           examples: {
             PageView: {
@@ -346,7 +346,7 @@ app.use(express.json());
 
 const endpoints: string[] = [
   '/collect/gtm',
-  '/collect/meta',
+  '/collect/algolia',
   '/collect/ometria',
   '/collect/secure'
 ];
@@ -362,13 +362,13 @@ if (!fs.existsSync(eventsDir)) {
   fs.mkdirSync(eventsDir, { recursive: true });
 }
 type GTMEvent = z.infer<typeof PageViewPayloadSchemaGTM> | z.infer<typeof AddToCartPayloadSchemaGTM> | z.infer<typeof CheckoutSuccessPayloadSchemaGTM>;
-type MetaEvent = z.infer<typeof PageViewPayloadSchemaMeta> | z.infer<typeof AddToCartPayloadSchemaMeta> | z.infer<typeof CheckoutSuccessPayloadSchemaMeta>;
+type AlgoliaEvent = z.infer<typeof PageViewPayloadSchemaAlgolia> | z.infer<typeof AddToCartPayloadSchemaAlgolia> | z.infer<typeof CheckoutSuccessPayloadSchemaAlgolia>;
 type OmetriaEvent = z.infer<typeof PageViewPayloadSchemaOmetria> | z.infer<typeof AddToCartPayloadSchemaOmetria> | z.infer<typeof CheckoutSuccessPayloadSchemaOmetria>;
 type SecureEvent = z.infer<typeof PageViewPayloadSchemaSecure> | z.infer<typeof AddToCartPayloadSchemaSecure> | z.infer<typeof CheckoutSuccessPayloadSchemaSecure>;
 
 type Events = {
   '/collect/gtm'?: Array<{ timestamp: number; payload: GTMEvent }>;
-  '/collect/meta'?: Array<{ timestamp: number; payload: MetaEvent }>;
+  '/collect/algolia'?: Array<{ timestamp: number; payload: AlgoliaEvent }>;
   '/collect/ometria'?: Array<{ timestamp: number; payload: OmetriaEvent }>;
   '/collect/secure'?: Array<{ timestamp: number; payload: SecureEvent }>;
 };
@@ -409,13 +409,13 @@ app.post('/collect/gtm', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.post('/collect/meta', (req: Request, res: Response) => {
-  console.log('Received POST /collect/meta:', req.body);
+app.post('/collect/algolia', (req: Request, res: Response) => {
+  console.log('Received POST /collect/algolia:', req.body);
   const eventType = req.body.event_type;
   const schemas = {
-    page_view: PageViewPayloadSchemaMeta,
-    add_to_cart: AddToCartPayloadSchemaMeta,
-    checkout_success: CheckoutSuccessPayloadSchemaMeta,
+    page_view: PageViewPayloadSchemaAlgolia,
+    add_to_cart: AddToCartPayloadSchemaAlgolia,
+    checkout_success: CheckoutSuccessPayloadSchemaAlgolia,
   };
   const schema = schemas[eventType as keyof typeof schemas];
   if (!schema) {
@@ -427,8 +427,8 @@ app.post('/collect/meta', (req: Request, res: Response) => {
     res.status(400).json({ error: 'Invalid payload', details: result.error.issues });
     return;
   }
-  if (!events['/collect/meta']) events['/collect/meta'] = [];
-  events['/collect/meta'].push({ timestamp: Date.now(), payload: result.data });
+  if (!events['/collect/algolia']) events['/collect/algolia'] = [];
+  events['/collect/algolia'].push({ timestamp: Date.now(), payload: result.data });
   fs.writeFileSync(eventsFilePath, JSON.stringify(events, null, 2));
   res.status(200).json({ status: 'ok' });
 });
@@ -528,7 +528,7 @@ app.get('/report', (req: Request, res: Response) => {
       let count = 0;
       // Only use endpoint if it's a key of Events
       type EndpointKey = keyof Events;
-      if (["/collect/gtm", "/collect/meta", "/collect/ometria", "/collect/secure"].includes(endpoint)) {
+      if (["/collect/gtm", "/collect/algolia", "/collect/ometria", "/collect/secure"].includes(endpoint)) {
         const arr = fileEvents[endpoint as EndpointKey];
         arr?.forEach((e) => {
           if (e.payload && e.payload.event_type === type) {
