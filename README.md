@@ -1,4 +1,4 @@
-# 🧪 Full Stack Analytics Engineer - Technical Test
+# 🧪 Web Analytics Implementation Engineer - Technical Test
 
 Welcome! This technical test is designed to evaluate your ability to implement frontend analytics instrumentation in an e-commerce application and integrate with external analytics platforms in a performant and privacy-conscious way.
 
